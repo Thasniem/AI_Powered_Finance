@@ -108,44 +108,118 @@ def portfolio_gains():
     except Exception as e:
         print(f"Error: {e}")
 
+
+# ... previous code remains unchanged ...
 def plot_chart():
-    ticker=input("choose a ticker symbol: ")        
-    starting_string=input("Choose a starting date (DD/MM/YYYY): ")
-    plt.style.use('dark_background')
-    
-    start = dt.datetime.strptime(starting_string,"%d/%m/%Y")
-    end = dt.datetime.now()
-    
-    data= web.DataReader(ticker, 'yahoo', start,end)
-    
-    colors = mpf.make_marketcolors(up='#00ff00', down ='#ff0000', wick='inherit',edge='inherit', volume='in')
-    mpf_style = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=colors)
-    mpf.plot(data, type='candle', style=mpf_style, volume=True)
-    
+    try:
+        # Get stock ticker
+        ticker = input("Choose a ticker symbol (e.g., AAPL, TSLA): ").strip().upper()
+        if not ticker.isalpha():
+            print("Error: Invalid ticker symbol. Please enter a valid stock ticker (e.g., AAPL).")
+            return
+
+        # Get and validate date
+        starting_string = input("Choose a starting date (DD/MM/YYYY): ").strip()
+        try:
+            start = dt.datetime.strptime(starting_string, "%d/%m/%Y")
+        except ValueError:
+            print("Error: Invalid date format. Please enter the date as DD/MM/YYYY.")
+            return
+
+        end = dt.datetime.now()
+
+        # Fetch data using yfinance
+        print(f"Fetching stock data for {ticker} from {start.date()} to {end.date()}...")
+        df = yf.download(ticker, start=start, end=end)
+
+        if df.empty:
+            print(f"Error: No stock data found for {ticker}. Please check the symbol and date range.")
+            return
+
+        # Create the plot
+        plt.figure(figsize=(12, 6))
+        plt.plot(df.index, df['Close'], label='Close Price')
+        
+        # Customize the plot
+        plt.title(f'{ticker} Stock Price')
+        plt.xlabel('Date')
+        plt.ylabel('Price (USD)')
+        plt.grid(True)
+        plt.legend()
+        
+        # Rotate x-axis labels for better readability
+        plt.xticks(rotation=45)
+        
+        # Adjust layout and display
+        plt.tight_layout()
+        plt.show()
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        
+def plot_pie_chart():
+    try:
+        total_value = 0
+        values = {}
+        
+        # Calculate current value of each holding
+        for ticker, shares in portfolio.items():
+            stock = yf.Ticker(ticker)
+            data = stock.history(period="1d")
+            
+            if data.empty:
+                print(f"Warning: No recent data found for {ticker}. Skipping...")
+                continue
+            
+            price = data['Close'].iloc[-1]
+            value = price * shares
+            values[ticker] = value
+            total_value += value
+
+        if not values:
+            print("No data available to create pie chart.")
+            return
+
+        # Create pie chart
+        plt.figure(figsize=(10, 8))
+        plt.pie(values.values(), labels=values.keys(), autopct='%1.1f%%')
+        plt.title('Portfolio Distribution')
+        plt.axis('equal')
+        plt.show()
+
+    except Exception as e:
+        print(f"Error creating pie chart: {e}")
+                
 def bye():
     print("Good Bye!")
     sys.exit(0)
    
 mappings = {
-    'plot_chart':plot_chart,
-    'add_portfolio':add_portfolio,
-    'remove_portfolio':remove_portfolio,
-    'show_portfolio':show_portfolio,
-    'portfolio_worth':portfolio_worth,
-    'portfolio_gains':portfolio_gains,
-    'bye':bye
-    
+    'plot_chart': plot_chart,
+    'add_portfolio': add_portfolio,
+    'remove_portfolio': remove_portfolio,
+    'show_portfolio': show_portfolio,
+    'portfolio_worth': portfolio_worth,
+    'portfolio_gains': portfolio_gains,
+    'plot_pie_chart': plot_pie_chart,
+    'bye': bye
 }
+
 assistant = BasicAssistant('intents.json', mappings, None, "finance_assistant_model")
 assistant.fit_model()
 assistant.save_model()
 assistant.load_model()
 
+# Single main loop
 while True:
     message = input("")
-    response = assistant.ask(message)
-    print(response)
-
+    if any(x in message.lower() for x in ['plot chart', 'plot', 'show chart', 'chart']):
+        plot_chart()
+    elif any(x in message.lower() for x in ['pie chart', 'distribution', 'portfolio breakdown']):
+        plot_pie_chart()
+    else:
+        response = assistant.ask(message)
+        print(response)
            
     
         
