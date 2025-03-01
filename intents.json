@@ -49,6 +49,12 @@
         "context_set": ""
       },
       {
+        "tag": "plot_pie_chart",
+        "patterns": ["Show portfolio distribution", "Display holdings breakdown", "Show me a pie chart", "Visualize portfolio allocation", "How are my investments distributed?"],
+        "responses": ["Here's your portfolio distribution in a pie chart..."],
+        "context_set": ""
+      },  
+      {
         "tag": "bye",
         "patterns": ["Goodbye", "See you later", "Bye", "I'm leaving", "Talk to you later", "Have a good day"],
         "responses": ["Goodbye! Have a great day!", "See you soon!", "Take care!"],
