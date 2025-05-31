@@ -51,6 +51,7 @@ The **AI-Based Personal Finance Assistant** is a Python-powered tool designed to
 - Include advanced analytics like stock recommendations
 
 ## 🔗 GitHub Repository
+www.github.com/Thasniem/AI_Powered_Finance
 [Click here to view on GitHub](https://lnkd.in/dvrKsair)
 
 ---
